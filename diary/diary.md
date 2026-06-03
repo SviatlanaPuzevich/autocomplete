@@ -1,0 +1,2 @@
+Honestly, I don't even know what there is to discuss here. I think the main difficulties came up with `lazy evaluation`, mostly because I've never written anything like that before. After that, I re-read the assignment and realized I actually had to rewrite two classes using `constructor functions`. So, I had to spend some time looking up the proper syntax for defining methods and setting up prototype inheritance.
+Oh, and I also got stuck on the `remove` part—had to look up how to do it without using `replace`.
