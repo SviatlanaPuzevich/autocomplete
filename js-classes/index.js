@@ -43,5 +43,34 @@ class IntBuilder extends BaseBuilder {
   }
 }
 
-class StringBuilder {
+class StringBuilder extends BaseBuilder {
+  constructor(value = "") {
+    super(value);
+  }
+
+  minus(n) {
+    this.value = this.value.slice(0, -n);
+    return this;
+  }
+
+  multiply(n) {
+    this.value = this.value.repeat(n);
+    return this;
+  }
+
+  divide(n) {
+    const k = Math.floor(this.value.length / n);
+    this.value = this.value.substring(0, k);
+    return this;
+  }
+
+  remove(str) {
+    this.value = this.value.split(str).join('');
+    return this;
+  }
+
+  sub(from, n) {
+    this.value = this.value.substring(from, from + n);
+    return this;
+  }
 }
