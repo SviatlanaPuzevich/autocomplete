@@ -1,16 +1,14 @@
-class BaseBuilder {
-  constructor(value) {
-    this.value = value;
-    this.operations = [];
-  }
+function BaseBuilder (value) {
+  this.value = value;
+  this.operations = [];
 
-  plus(...values) {
+  this.plus = function(...values) {
     this.operations.push((current) =>
         values.reduce((acc, cur) => acc + cur, current));
     return this;
   }
 
-  get() {
+  this.get = function() {
     for (const operation of this.operations) {
       this.value = operation(this.value);
     }
@@ -18,6 +16,7 @@ class BaseBuilder {
     return this.value;
   }
 }
+
 
 class IntBuilder extends BaseBuilder {
   constructor(value) {
@@ -58,23 +57,21 @@ class IntBuilder extends BaseBuilder {
 }
 
 
-class StringBuilder extends BaseBuilder {
-  constructor(value = "") {
-    super(value);
-  }
+function StringBuilder (value = "") {
 
-  minus(n) {
+  BaseBuilder.call(this, value);
+
+  this.minus = function(n) {
     this.operations.push((current) => current.slice(0, -n));
     return this;
   }
 
-  multiply(n) {
+  this.multiply = function(n) {
     this.operations.push((current) => current.repeat(n));
     return this;
   }
 
-  divide(n) {
-
+  this.divide = function(n) {
     this.operations.push((current) => {
           const k = Math.floor(current.length / n);
           return current.substring(0, k);
@@ -83,12 +80,12 @@ class StringBuilder extends BaseBuilder {
     return this;
   }
 
-  remove(str) {
+  this.remove = function (str) {
     this.operations.push((current) => current.split(str).join(''));
     return this;
   }
 
-  sub(from, n) {
+  this.sub = function(from, n) {
     this.operations.push((current) => current.substring(from, from + n));
     return this;
   }
