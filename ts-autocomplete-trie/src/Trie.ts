@@ -32,7 +32,7 @@ class Trie {
   }
 
   addWord(word: string): void {
-    const normalizedWord = word.trim().toLowerCase();
+    const normalizedWord = word.trim();
 
     if (!normalizedWord) return;
 
@@ -46,24 +46,53 @@ class Trie {
   }
 
   search(prefix: string): string[] {
-    const normalizedPrefix = prefix.trim().toLowerCase();
-    const result: string[] = [];
-    let current = this.root;
+    if (!prefix) {
+      return [];
+    }
 
-    for (const ch of normalizedPrefix) {
-      const next = current.findChild(ch);
-      if (!next) {
-        return [];
+    const states = this.findPrefixStates(prefix);
+    if (states.length === 0) {
+      return [];
+    }
+
+    const result: Array<string> = [];
+
+    for (const [key, node] of states) {
+      if (node.isCompleteWord) {
+        result.push(key);
       }
-      current = next;
+      this.collectWords(key, node, result);
     }
-
-    if (current.isCompleteWord) {
-      result.push(normalizedPrefix);
-    }
-    this.collectWords(normalizedPrefix, current, result);
 
     return result;
+  }
+
+  private findPrefixStates(prefix: string): Array<[string, TrieNode]> {
+    let states: Array<[string, TrieNode]> = [["", this.root]];
+
+    for (const ch of prefix) {
+      const nextLevel: Array<[string, TrieNode]> = [];
+
+      for (const [word, node] of states) {
+        const upper = node.findChild(ch.toUpperCase());
+        const lower = node.findChild(ch.toLowerCase());
+
+        if (upper) {
+          nextLevel.push([word + upper.value, upper]);
+        }
+
+        if (lower && upper !== lower) {
+          nextLevel.push([word + lower.value, lower]);
+        }
+      }
+
+      if (nextLevel.length === 0) {
+        return [];
+      }
+      states = nextLevel;
+    }
+
+    return states;
   }
 
   private collectWords(prefix: string, node: TrieNode, result: string[]): void {
