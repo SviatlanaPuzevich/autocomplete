@@ -2,12 +2,12 @@ type NodeValue = string | null;
 
 class TrieNode {
   value: NodeValue;
-  isCompleteWord: boolean;
+  wordCount: number;
   children: Map<string, TrieNode>;
 
   constructor(value: NodeValue = null) {
     this.value = value;
-    this.isCompleteWord = false;
+    this.wordCount = 0;
     this.children = new Map();
   }
 
@@ -15,7 +15,6 @@ class TrieNode {
     if (!this.children.has(ch)) {
       this.children.set(ch, new TrieNode(ch));
     }
-
     return this.children.get(ch)!;
   }
 
@@ -33,16 +32,12 @@ class Trie {
 
   addWord(word: string): void {
     const normalizedWord = word.trim();
-
     if (!normalizedWord) return;
-
     let current = this.root;
-
     for (const ch of normalizedWord) {
       current = current.addChild(ch);
     }
-
-    current.isCompleteWord = true;
+    current.wordCount += 1;
   }
 
   search(prefix: string): string[] {
@@ -58,8 +53,10 @@ class Trie {
     const result: Array<string> = [];
 
     for (const [key, node] of states) {
-      if (node.isCompleteWord) {
-        result.push(key);
+      if (node.wordCount > 0) {
+        for (let i = 0; i < node.wordCount; i++) {
+          result.push(key);
+        }
       }
       this.collectWords(key, node, result);
     }
@@ -99,8 +96,10 @@ class Trie {
     for (const child of node.children.values()) {
       const nextPrefix = prefix + child.value;
 
-      if (child.isCompleteWord) {
-        result.push(nextPrefix);
+      if (child.wordCount > 0) {
+        for (let i = 0; i < child.wordCount; i++) {
+          result.push(nextPrefix);
+        }
       }
 
       this.collectWords(nextPrefix, child, result);
