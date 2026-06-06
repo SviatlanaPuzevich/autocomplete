@@ -82,6 +82,6 @@ class Trie {
 export function createAutoComplete(sourceArray: Array<string>) {
   const trie = new Trie(sourceArray);
   return (prefix: string) => {
-    trie.search(prefix);
+    return trie.search(prefix);
   };
 }
