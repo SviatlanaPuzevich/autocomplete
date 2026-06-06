@@ -1,1 +1,1 @@
-console.log("Hello World");
+import { createAutoComplete } from "./src/Trie.ts";
