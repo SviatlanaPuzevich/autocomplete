@@ -10,7 +10,7 @@ export class Executor {
   }));
 
   constructor(
-    private readonly task: (data: DataItem[]) => Promise<void>,
+    private readonly task: (data: DataItem[], deadline: number) => Promise<void>,
     serverPort: number = 3000,
   ) {
     this.server = new SimpleServer(serverPort);
@@ -31,7 +31,7 @@ export class Executor {
   }
 
   private async runTaskWithTimeout(data: DataItem[]) {
-    // Implement the logic to run the task with a timeout here
-    return this.task(data);
+    const deadline = Date.now() + 60_000;
+    return this.task(data, deadline);
   }
 }
