@@ -2,22 +2,34 @@ import {DataItem, Executor} from "./executor";
 
 const URL = 'http://localhost:3000/send';
 const MAX_CONCURRENT_REQUESTS = 20;
+const MAX_RETRY = 3;
+
 const counter = {
     success: 0,
     failed: 0,
-    pending: 0,
     lost: 0,
     skipped: 0,
+    processed: 0,
+
+    toString(): string {
+        return `
+Processed : ${this.processed}
+Successful: ${this.success}
+Failed    : ${this.failed}
+Lost      : ${this.lost} 
+Skipped   : ${this.skipped}`
+    }
 }
 
 const task = async (data: DataItem [], deadline: number): Promise<void> => {
+    counter.processed = data.length;
     const workers: Promise<void>[] = [];
     for (let index = 0; index < MAX_CONCURRENT_REQUESTS; index++) {
         workers.push(worker(data, deadline));
     }
     await Promise.all(workers);
     counter.skipped = data.length;
-    console.log("--- Final Results ---", counter);
+    console.log("--- Final Results ---", counter.toString());
 
 }
 
@@ -27,25 +39,39 @@ const worker = async (data: DataItem [], deadline: number): Promise<void> => {
             break;
         }
         const item = data.pop()!;
-        counter.pending++;
         try {
-            await sendRequest(item);
-            counter.success++;
+            await processItem(item);
         } catch (error) {
 
             if (error instanceof Error) {
-                if (error.message === 'Server Overload') {
-                    counter.lost++;
-                } else {
-                    counter.failed++;
-                }
+                console.error(error);
             }
 
-        } finally {
-            counter.pending--;
         }
     }
 }
+
+const processItem = async (item: DataItem): Promise<void> => {
+    for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+        try {
+            await sendRequest(item);
+            counter.success++;
+            return;
+        } catch (error) {
+
+            const message = error instanceof Error ? error.message : '';
+
+            if (message === 'Server Overload') {
+                counter.lost++;
+                throw error;
+            }
+
+            if (message === 'Random Failure') {
+                counter.failed++;
+            }
+        }
+    }
+};
 
 const sendRequest = async (item: DataItem): Promise<void> => {
     const response = await fetch(URL, {
@@ -57,13 +83,14 @@ const sendRequest = async (item: DataItem): Promise<void> => {
     });
 
     const result = await response.json();
-    console.log('Successes :', result);
+    console.log('Response :', result);
 
     if (!response.ok) {
+        const errorMessage =
+            (result && typeof result === 'object' && 'error' in result)
+                ? String(result.error)
+                : `HTTP ${response.status}`;
 
-        const errorMessage = (result && typeof result === 'object' && 'error' in result)
-            ? String(result.error)
-            : `Server responded with status ${response.status}`;
         throw new Error(errorMessage);
     }
 
