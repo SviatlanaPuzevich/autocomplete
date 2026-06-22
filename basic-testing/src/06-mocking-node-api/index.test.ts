@@ -32,6 +32,10 @@ describe('doStuffByTimeout', () => {
     jest.useFakeTimers();
   });
 
+  beforeEach(() => {
+    jest.clearAllTimers();
+  });
+
   afterAll(() => {
     jest.useRealTimers();
   });
@@ -64,6 +68,10 @@ describe('doStuffByInterval', () => {
 
   beforeAll(() => {
     jest.useFakeTimers();
+  });
+
+  beforeEach(() => {
+    jest.clearAllTimers();
   });
 
   afterAll(() => {
